@@ -1,76 +1,69 @@
-$(function () {
-    // 去注册账号
-    $('#link_reg').on('click', function () {
+$(function() {
+    $('#link_reg').on('click', function() {
         $('.login-box').hide()
         $('.reg-box').show()
     })
-    // 去登录账号
-    $('#link_login').on('click', function () {
+    $('#link_login').on('click', function() {
         $('.login-box').show()
         $('.reg-box').hide()
     })
 
-    // 从layui获取form对象
+    //从layui中获取form对象
     var form = layui.form
+    var layer = layui.layer
     form.verify({
-        pwd: [/^[\S]{6,12}$/, '密码必须为6-12位'],
-        // 校验两次密码是否一致
-        repwd: function (value) {
-            // 形参拿到输入框的密码
-            // 然后进行判断
-            var pwd = $('.reg-box [name=password]').val()
+        //自定义了一个叫做pwd校验规则,不能包含空格,在6~12位之间
+        pwd: [/^[\S]{6,12}$/, '密码必须6到12位，且不能出现空格'],
+        //校验两次密码是否一致
+        repwd: function(value) {
+            //形参是确认密码框的值
+            var pwd = $('.reg-box [name = password]').val()
             if (pwd != value) {
-                return '两次密码不一致！'
+                return '两次密码不一致'
             }
         }
     })
 
-    var layer = layui.layer
-    // 注册
-    $('#form_reg').on('submit', function (e) {
-        e.preventDefault()
-        $.ajax({
-            url: '/api/reguser',
-            type: 'POST',
-            data: {
-                username: $('#form_reg [name=username]').val(),
-                password: $('#form_reg [name=password]').val()
-            },
-            success: function (res) {
-                if (res.status !== 0) {
-                    return layer.msg(res.message)
-                }
-                layer.msg("注册成功");
-                $('#link_login').click()
+    //监听注册表单的提交事件
+    $('#form_reg').on('submit', function(e) {
+        e.preventDefault();
+        $.post('/api/reguser', { username: $('#form_reg [name=username]').val(), password: $('#form_reg [name=password]').val() }, function(res) {
+            if (res.status !== 0) {
+                // return console.log(res.message);
+                return layer.msg(res.message)
             }
+            // console.log('注册成功');
+            layer.msg('注册成功，请登录！')
+                //模拟人的点击行为
+            $('#link_login').click()
         })
-        // $.post('http://api-breakingnews-web.itheima.net/api/reguser',
-        //     { username: $('#form_reg [name=username]').val(), password: $('#form_reg [name=password]').val() },
-        //     function (res) {
-        //         if (res.status !== 0) {
-        //             return res.message
-        //         }
-        //     })
     })
-    // 登录
-    $('#form_login').on('submit', function (e) {
+
+    //监听登录表单的事件
+    $('#form_login').submit(function(e) {
         e.preventDefault()
         $.ajax({
             url: '/api/login',
-            type: 'POST',
+            method: 'POST',
+            //快速获取表单数据
             data: {
                 username: $('#form_login [name=username]').val(),
                 password: $('#form_login [name=password]').val()
             },
-            success: function (res) {
+            success: function(res) {
                 if (res.status !== 0) {
-                    return layer.msg(res.message);
+                    console.log(res.message);
+                    return layer.msg('登录失败！')
                 }
-                layer.msg('登录成功');
-                // 保存登录状态保持  免登陆
+                layer.msg('登录成功！')
+                console.log(res.token);
+                //将登录成功得到的token字符串，保存到localStorage中
                 localStorage.setItem('token', res.token)
+                    //跳转到后台主页
                 location.href = '/index.html'
             }
+
         })
     })
+
 })
