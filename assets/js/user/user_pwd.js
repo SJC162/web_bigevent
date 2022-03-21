@@ -1,43 +1,33 @@
-$(function () {
+$(function() {
     var form = layui.form
     form.verify({
-        newPwd: [/^[\S]{6,16}$/, '密码格式不正确'],
-        somePwd: function (value) {
+        pwd: [/^[\S]{6,12}$/, '密码必须6到12位，且不能出现空格'],
+        samePwd: function(value) {
             if (value === $('[name=oldPwd]').val()) {
                 return "新密码和原密码一致"
             }
         },
-        rePwd: function (value) {
+        rePwd: function(value) {
             if (value !== $('[name=newPwd]').val()) {
                 return "两次密码不一致"
             }
         }
+
     })
 
-})
-$('.layui-form').on('submit', function (e) {
-    e.preventDefault()
-    $.ajax({
-        method: 'POST',
-        url: '/my/updatepwd',
-        data: {
-            oldPwd: $('#oldpwd').val(),
-            newPwd: $('#newpwd').val()
-        },
-        success: function (res) {
-            if (res.status !== 0) {
-                return layer.msg('更改密码失败')
+    $('.layui-form').on('submit', function(e) {
+        e.preventDefault();
+        $.ajax({
+            method: 'POST',
+            url: '/my/updatepwd',
+            data: $(this).serialize(),
+            success: function(res) {
+                if (res.status !== 0) {
+                    return layui.layer.msg('更新密码失败！')
+                }
+                layui.layer.msg('更新密码成功！')
+                $('.layui-form')[0].reset()
             }
-            layer.msg('更改密码成功')
-            // console.log(res);
-        }
-        
+        })
     })
 })
-$('#btnReset').on('click', function (e) {
-    e.preventDefault()
-    $('#oldpwd').val('')
-    $('#newpwd').val('')
-    $('#repwd').val('')
-})
-
