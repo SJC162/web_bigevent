@@ -1,18 +1,19 @@
-$(function () {
+$(function() {
     var layer = layui.layer
     var form = layui.form
-    // 定义加载文章费雷的方法
+        // 定义加载文章费雷的方法
     initCate()
     initEditor()
+
     function initCate() {
         $.ajax({
             method: 'GET',
             url: '/my/article/cates',
-            success: function (res) {
+            success: function(res) {
                 if (res.status !== 0) {
                     return layer.msg('获取类别失败')
                 }
-                console.log(res);
+                // console.log(res);
 
                 var htmlstr = template('tpl-cate', res)
                 $('[name=cate_id]').html(htmlstr)
@@ -36,11 +37,11 @@ $(function () {
     $image.cropper(options)
 
     // 选择封面的按钮，
-    $('#btnChooseImage').on('click', function () {
+    $('#btnChooseImage').on('click', function() {
         $('#coverFile').click()
     })
 
-    $('#coverFile').on('change', function (e) {
+    $('#coverFile').on('change', function(e) {
         // e.preventDefault()
         var files = e.target.files
         if (files === 0) { return }
@@ -53,23 +54,26 @@ $(function () {
 
 
     var art_state = '已发布'
-    $('#btnSave2').on('click', function () {
+    $('#btnSave2').on('click', function() {
         art_state = '草稿'
     })
 
 
 
-    $("#form-pub").on('submit', function (e) {
+    $("#form-pub").on('submit', function(e) {
         e.preventDefault()
-        // 基于form表单，快速创建一个formData对象
-        var fd = new FormData(this)
+            // 基于form表单，快速创建一个formData对象
+        var fd = new FormData($(this)[0])
         fd.append('state', art_state)
+        fd.forEach(function(v, k) {
+            console.log(v, k);
+        })
         $image
             .cropper('getCroppedCanvas', {
                 width: 400,
                 height: 280
             })
-            .toBlob(function (blob) {
+            .toBlob(function(blob) {
                 fd.append('cover_img', blob)
                 publishArticle(fd)
             })
@@ -80,9 +84,10 @@ $(function () {
             method: 'POST',
             url: '/my/article/add',
             data: fd,
+            //注意：如果向服务器提交的是FormData格式的数据，必须添加以下两个配置项
             contentType: false,
             processData: false,
-            success: function (res) {
+            success: function(res) {
                 if (res.status !== 0) {
                     return layer.msg('发表文章失败')
                 }
@@ -92,9 +97,3 @@ $(function () {
         })
     }
 })
-
-
-
-
-
-
